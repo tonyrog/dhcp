@@ -1,0 +1,8 @@
+{application, dhcp,
+ [{description, "Erlang DHCP Server"},
+  {vsn, git},
+  {modules, [dhcp_app, dhcp_sup, dhcp_server, dhcp_alloc, dhcp_lib]},
+  {registered, [dhcp_sup, dhcp_server, dhcp_alloc]},
+  {applications, [kernel, stdlib]},
+  {mod, {dhcp_app, []}}
+ ]}.
