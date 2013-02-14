@@ -45,7 +45,7 @@ decode(<<Op, Htype, Hlen, Hops,  Xid:32, Secs:16, Flags:16,
 	  file    = binary_to_list(File),
 	  options = OptsList}.
 
-encode(D) when record(D, dhcp) ->
+encode(D) when is_record(D, dhcp) ->
     Op      = D#dhcp.op,
     Htype   = D#dhcp.htype,
     Hlen    = D#dhcp.hlen,
@@ -90,7 +90,7 @@ binary_to_shortlist(<<>>) ->
 ip_to_binary({A, B, C, D}) ->
     <<A, B, C, D>>.
 
-pad(X, Size) when binary(X) ->
+pad(X, Size) when is_binary(X) ->
     Len  = size(X),
     Plen = Size - Len,
     <<X/binary, 0:Plen/integer-unit:8>>.
@@ -203,6 +203,8 @@ type(?DHO_TCP_KEEPALIVE_GARBAGE)       -> byte;
 type(?DHO_NIS_DOMAIN)                  -> string;
 type(?DHO_NIS_SERVERS)                 -> iplist;
 type(?DHO_NTP_SERVERS)                 -> iplist;
+type(?DHO_TFTP_SERVER_NAME)            -> string;
+type(?DHO_BOOTFILE_NAME)               -> string;
 type(?DHO_VENDOR_ENCAPSULATED_OPTIONS) -> vendor;
 type(?DHO_NETBIOS_NAME_SERVERS)        -> iplist;
 type(?DHO_NETBIOS_DD_SERVERS)          -> iplist;
@@ -243,4 +245,5 @@ type(?DHO_UAP)                         -> string;
 type(?DHO_AUTO_CONFIGURE)              -> byte;
 type(?DHO_NAME_SERVICE_SEARCH)         -> shortlist;
 type(?DHO_SUBNET_SELECTION)            -> ip;
+type(?DHO_TFTP_SERVER_ADDRESS)         -> ip;
 type(_)                                -> unknown.

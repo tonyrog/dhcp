@@ -97,10 +97,12 @@
 -define(DHO_DHCP_REBINDING_TIME,         59).
 -define(DHO_VENDOR_CLASS_IDENTIFIER,     60).
 -define(DHO_DHCP_CLIENT_IDENTIFIER,      61).
--define(DHO_NWIP_DOMAIN_NAME,            62).
--define(DHO_NWIP_SUBOPTIONS,             63).
--define(DHO_NIS_PLUS_DOMAIN,             64).
--define(DHO_NIS_PLUS_SERVERS,            65).
+-define(DHO_NWIP_DOMAIN_NAME,            62).  %% rfc2242
+-define(DHO_NWIP_SUBOPTIONS,             63).  %% rfc2242
+-define(DHO_NIS_PLUS_DOMAIN,             64).  %% rfc2132
+-define(DHO_NIS_PLUS_SERVERS,            65).  %% rfc2132
+-define(DHO_TFTP_SERVER_NAME,            66).  %% rfc2132
+-define(DHO_BOOTFILE_NAME,               67).  %% rfc2132
 -define(DHO_MOBILE_IP_HOME_AGENTS,       68).
 -define(DHO_SMTP_SERVERS,                69).
 -define(DHO_POP3_SERVERS,                70).
@@ -120,6 +122,7 @@
 -define(DHO_AUTO_CONFIGURE,             116). %% rfc2563
 -define(DHO_NAME_SERVICE_SEARCH,        117). %% rfc2937
 -define(DHO_SUBNET_SELECTION,           118). %% rfc3011
+-define(DHO_TFTP_SERVER_ADDRESS,        150). %% rfc5859
 -define(DHO_END,                        255).
 
 %%% DHCP Message types

@@ -203,7 +203,7 @@ handle_dhcp(?DHCPINFORM, D, Socket, State) ->
 handle_dhcp(MsgType, _D, _Socket, _State) ->
     error_logger:error_msg("Invalid DHCP message type ~p", [MsgType]).
 
-client_state(D) when record(D, dhcp) ->
+client_state(D) when is_record(D, dhcp) ->
     case optsearch(?DHO_DHCP_SERVER_IDENTIFIER, D) of
 	{value, ServerId} ->
 	    {selecting, ServerId};
@@ -273,7 +273,7 @@ send_nak(S, Socket, D, Reason) ->
     gen_udp:send(Socket, IP, Port, dhcp_lib:encode(DHCPNak)).
 
 %%% Behaviour is described in RFC2131 sec. 4.1
-get_dest(D) when record(D, dhcp) ->
+get_dest(D) when is_record(D, dhcp) ->
     IP = case D#dhcp.giaddr of
 	     {0, 0, 0, 0} ->
 		 case D#dhcp.ciaddr of
@@ -292,10 +292,10 @@ get_dest(D) when record(D, dhcp) ->
 	   end,
     {IP, Port}.
 
-is_broadcast(D) when record(D, dhcp) ->
+is_broadcast(D) when is_record(D, dhcp) ->
     (D#dhcp.flags bsr 15) == 1.
 
-optsearch(Option, D) when record(D, dhcp) ->
+optsearch(Option, D) when is_record(D, dhcp) ->
     case lists:keysearch(Option, 1, D#dhcp.options) of
 	{value, {Option, Value}} ->
 	    {value, Value};
@@ -303,7 +303,7 @@ optsearch(Option, D) when record(D, dhcp) ->
 	    false
     end.
     
-get_client_id(D) when record(D, dhcp) ->
+get_client_id(D) when is_record(D, dhcp) ->
     case optsearch(?DHO_DHCP_CLIENT_IDENTIFIER, D) of
         {value, ClientId} ->
 	    ClientId;
@@ -311,7 +311,7 @@ get_client_id(D) when record(D, dhcp) ->
 	    D#dhcp.chaddr
     end.
 
-get_requested_ip(D) when record(D, dhcp) ->
+get_requested_ip(D) when is_record(D, dhcp) ->
     case optsearch(?DHO_DHCP_REQUESTED_ADDRESS, D) of
         {value, IP} ->
 	    IP;
@@ -319,7 +319,7 @@ get_requested_ip(D) when record(D, dhcp) ->
 	    {0, 0, 0, 0}
     end.
 
-fmt_clientid(D) when record(D, dhcp) ->
+fmt_clientid(D) when is_record(D, dhcp) ->
     fmt_clientid(get_client_id(D));
 fmt_clientid([_T, E1, E2, E3, E4, E5, E6]) ->
     fmt_clientid({E1, E2, E3, E4, E5, E6});
@@ -328,13 +328,13 @@ fmt_clientid({E1, E2, E3, E4, E5, E6}) ->
       io_lib:format("~2.16.0b:~2.16.0b:~2.16.0b:~2.16.0b:~2.16.0b:~2.16.0b",
 	     [E1, E2, E3, E4, E5, E6])).
 
-fmt_gateway(D) when record(D, dhcp) ->
+fmt_gateway(D) when is_record(D, dhcp) ->
     case D#dhcp.giaddr of
 	{0, 0, 0, 0} -> [];
 	IP           -> lists:flatten(io_lib:format("via ~s", [fmt_ip(IP)]))
     end.
 
-fmt_hostname(D) when record(D, dhcp) ->
+fmt_hostname(D) when is_record(D, dhcp) ->
     case optsearch(?DHO_HOST_NAME, D) of
         {value, Hostname} ->
             lists:flatten(io_lib:format("(~s)", [Hostname]));
