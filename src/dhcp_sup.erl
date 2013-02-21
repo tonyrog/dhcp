@@ -11,7 +11,7 @@
 
 %% API
 -export([start_link/0]).
-
+-export([get_config/0]).
 %% Supervisor callbacks
 -export([init/1]).
 

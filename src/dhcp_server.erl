@@ -19,7 +19,7 @@
 -include("dhcp.hrl").
 
 -define(SERVER, ?MODULE).
--define(DHCP_SERVER_PORT, 67).
+-define(DHCP_SERVER_PORT, 6767).
 -define(DHCP_CLIENT_PORT, 68).
 
 -record(state, {socket, server_id, next_server}).

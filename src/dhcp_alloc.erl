@@ -201,12 +201,13 @@ belongs_to_subnet(IP, S) ->
     ip_to_int(S#subnet.network) ==
 	ip_to_int(IP) band ip_to_int(S#subnet.netmask).
 
-ip_to_int(IP) ->
-    <<Int:32>> = list_to_binary(inet:ip_to_bytes(IP)),
+ip_to_int({A,B,C,D}) ->
+    <<Int:32>> = <<A,B,C,D>>,
     Int.
 
 int_to_ip(Int) ->
-    list_to_tuple(binary_to_list(<<Int:32>>)).
+    <<A,B,C,D>> = <<Int:32>>,
+    {A,B,C,D}.
 
 select_address(_ClientId, {0, 0, 0, 0}, S) ->
     F = fun(A, false) when ?IS_AVAILABLE(A) ->
