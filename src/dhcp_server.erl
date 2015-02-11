@@ -10,7 +10,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/3]).
+-export([start_link/4]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -19,7 +19,7 @@
 -include("dhcp.hrl").
 
 -define(SERVER, ?MODULE).
--define(DHCP_SERVER_PORT, 6767).
+-define(DHCP_SERVER_PORT, 67).
 -define(DHCP_CLIENT_PORT, 68).
 
 -record(state, {socket, server_id, next_server}).
@@ -31,9 +31,9 @@
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
 %%--------------------------------------------------------------------
-start_link(ServerId, NextServer, LogFile) ->
+start_link(ServerId, NextServer, LogFile, NetNameSpace) ->
     gen_server:start_link({local, ?SERVER}, ?MODULE,
-			  [ServerId, NextServer, LogFile], []).
+			  [ServerId, NextServer, LogFile, NetNameSpace], []).
 
 %%====================================================================
 %% gen_server callbacks
@@ -46,9 +46,10 @@ start_link(ServerId, NextServer, LogFile) ->
 %%                         {stop, Reason}
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
-init([ServerId, NextServer, LogFile]) ->
+init([ServerId, NextServer, LogFile, NetNameSpace]) ->
     error_logger:logfile({open, LogFile}),
-    Options = get_sockopt(),
+    Options = get_sockopt(NetNameSpace),
+    io:format("Opts: ~p~n", [Options]),
     case gen_udp:open(?DHCP_SERVER_PORT, Options) of
 	{ok, Socket} ->
 	    error_logger:info_msg("Starting DHCP server..."),
@@ -345,10 +346,17 @@ fmt_hostname(D) when is_record(D, dhcp) ->
 fmt_ip({A1, A2, A3, A4}) ->
     io_lib:format("~w.~w.~w.~w", [A1, A2, A3, A4]).
 
-get_sockopt() ->
+get_nsopts(NetNameSpace)
+  when is_binary(NetNameSpace); is_list(NetNameSpace) ->
+    [{netns, NetNameSpace}];
+get_nsopts(_) ->
+    [].
+
+get_sockopt(NetNameSpace) ->
+    NsOpts = get_nsopts(NetNameSpace),
     case init:get_argument(fd) of
 	{ok, [[FD]]} ->
-	    [binary, {broadcast, true}, {fd, list_to_integer(FD)}];
+	    [binary, {broadcast, true}, {fd, list_to_integer(FD)}|NsOpts];
 	error ->
-	    [binary, {broadcast, true}]
+	    [binary, {broadcast, true}|NsOpts]
     end.
