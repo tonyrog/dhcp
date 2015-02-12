@@ -3,6 +3,6 @@
   {vsn, git},
   {modules, [dhcp_app, dhcp_sup, dhcp_server, dhcp_alloc, dhcp_lib]},
   {registered, [dhcp_sup, dhcp_server, dhcp_alloc]},
-  {applications, [kernel, stdlib]},
+  {applications, [kernel, stdlib, lager]},
   {mod, {dhcp_app, []}}
  ]}.

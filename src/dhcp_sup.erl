@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : dhcp_sup.erl
 %%% Author  : Ruslan Babayev <ruslan@babayev.com>
-%%% Description : 
+%%% Description :
 %%%
 %%% Created : 20 Sep 2006 by Ruslan Babayev <ruslan@babayev.com>
 %%%-------------------------------------------------------------------
@@ -20,7 +20,6 @@
 -include("dhcp_alloc.hrl").
 
 -define(SERVER, ?MODULE).
--define(DHCP_LOGFILE, "/var/log/dhcp.log").
 -define(DHCP_LEASEFILE, "/var/run/dhcp_leases.dets").
 
 %%====================================================================
@@ -40,16 +39,16 @@ start_link() ->
 %% Func: init(Args) -> {ok,  {SupFlags,  [ChildSpec]}} |
 %%                     ignore                          |
 %%                     {error, Reason}
-%% Description: Whenever a supervisor is started using 
-%% supervisor:start_link/[2,3], this function is called by the new process 
-%% to find out about restart strategy, maximum restart frequency and child 
+%% Description: Whenever a supervisor is started using
+%% supervisor:start_link/[2,3], this function is called by the new process
+%% to find out about restart strategy, maximum restart frequency and child
 %% specifications.
 %%--------------------------------------------------------------------
 init([]) ->
     case get_config() of
-        {ok, ServerId, NextServer, LogFile, LeaseFile, Subnets, Hosts} ->
+        {ok, NetNameSpace, Interface, ServerId, NextServer, LeaseFile, Subnets, Hosts} ->
             DHCPServer = {dhcp_server, {dhcp_server, start_link,
-                                        [ServerId, NextServer, LogFile]},
+                                        [NetNameSpace, Interface, ServerId, NextServer]},
                           permanent, 2000, worker, [dhcp_server]},
             DHCPAlloc = {dhcp_alloc, {dhcp_alloc, start_link,
                                       [LeaseFile, Subnets, Hosts]},
@@ -69,29 +68,14 @@ get_config() ->
               end,
     case file:consult(filename:join(ConfDir, "dhcp.conf")) of
         {ok, Terms} ->
-            ServerId = case keysearch(server_id, 1, Terms) of
-                           {value, {_, SId}} -> SId;
-                           false -> {0, 0, 0, 0}
-                       end,
-            NextServer = case keysearch(next_server, 1, Terms) of
-                             {value, {_, Next}} -> Next;
-                             false -> {0, 0, 0, 0}
-                         end,
-            LogFile = case keysearch(logfile, 1, Terms) of
-                          {value, {_, Log}} -> Log;
-                          false -> ?DHCP_LOGFILE
-                      end,
-            LeaseFile = case keysearch(lease_file, 1, Terms) of
-                            {value, {_, Lease}} -> Lease;
-                            false -> ?DHCP_LEASEFILE
-                        end,
-            Subnets = filter(fun(#subnet{}) -> true;
-                                (_) -> false
-                             end, Terms),
-            Hosts = filter(fun(#host{}) -> true;
-                              (_) -> false
-                           end, Terms),
-            {ok, ServerId, NextServer, LogFile, LeaseFile, Subnets, Hosts};
+	    NetNameSpace = proplists:get_value(netns,       Terms),
+	    Interface =    proplists:get_value(interface,   Terms),
+            ServerId =     proplists:get_value(server_id,   Terms, {0, 0, 0, 0}),
+            NextServer =   proplists:get_value(next_server, Terms, {0, 0, 0, 0}),
+            LeaseFile =    proplists:get_value(lease_file,  Terms, ?DHCP_LEASEFILE),
+            Subnets =      [X || X <- Terms, is_record(X, subnet)],
+            Hosts =        [X || X <- Terms, is_record(X, host)],
+            {ok, NetNameSpace, Interface, ServerId, NextServer, LeaseFile, Subnets, Hosts};
         {error, Reason} ->
 	    {error, Reason}
     end.
