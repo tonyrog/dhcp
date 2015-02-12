@@ -1,0 +1,8 @@
+*~
+*.[oa]
+*.beam
+/ebin/*.app
+/priv/*.so
+
+tetrapak/.local.cache
+

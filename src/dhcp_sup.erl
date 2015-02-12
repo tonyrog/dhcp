@@ -20,7 +20,6 @@
 -include("dhcp_alloc.hrl").
 
 -define(SERVER, ?MODULE).
--define(DHCP_LOGFILE, "/var/log/dhcp.log").
 -define(DHCP_LEASEFILE, "/var/run/dhcp_leases.dets").
 
 %%====================================================================
@@ -47,9 +46,9 @@ start_link() ->
 %%--------------------------------------------------------------------
 init([]) ->
     case get_config() of
-        {ok, ServerId, NextServer, LogFile, NetNameSpace, LeaseFile, Subnets, Hosts} ->
+        {ok, NetNameSpace, Interface, ServerId, NextServer, LeaseFile, Subnets, Hosts} ->
             DHCPServer = {dhcp_server, {dhcp_server, start_link,
-                                        [ServerId, NextServer, LogFile, NetNameSpace]},
+                                        [NetNameSpace, Interface, ServerId, NextServer]},
                           permanent, 2000, worker, [dhcp_server]},
             DHCPAlloc = {dhcp_alloc, {dhcp_alloc, start_link,
                                       [LeaseFile, Subnets, Hosts]},
@@ -69,14 +68,14 @@ get_config() ->
               end,
     case file:consult(filename:join(ConfDir, "dhcp.conf")) of
         {ok, Terms} ->
+	    NetNameSpace = proplists:get_value(netns,       Terms),
+	    Interface =    proplists:get_value(interface,   Terms),
             ServerId =     proplists:get_value(server_id,   Terms, {0, 0, 0, 0}),
             NextServer =   proplists:get_value(next_server, Terms, {0, 0, 0, 0}),
-            LogFile =      proplists:get_value(logfile,     Terms, ?DHCP_LOGFILE),
             LeaseFile =    proplists:get_value(lease_file,  Terms, ?DHCP_LEASEFILE),
-	    NetNameSpace = proplists:get_value(netns,       Terms),
             Subnets =      [X || X <- Terms, is_record(X, subnet)],
             Hosts =        [X || X <- Terms, is_record(X, host)],
-            {ok, ServerId, NextServer, LogFile, NetNameSpace, LeaseFile, Subnets, Hosts};
+            {ok, NetNameSpace, Interface, ServerId, NextServer, LeaseFile, Subnets, Hosts};
         {error, Reason} ->
 	    {error, Reason}
     end.
